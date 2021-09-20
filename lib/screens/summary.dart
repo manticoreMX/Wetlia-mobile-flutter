@@ -65,10 +65,18 @@ class SummaryScreenState extends State<SummaryScreen> {
     var landscape = MediaQuery.of(context).orientation == Orientation.landscape;
     return Container(
       height: double.infinity,
-      child: Column(
+      decoration: BoxDecoration(
+          image: DecorationImage(
+              fit: BoxFit.cover,
+              image: AssetImage(landscape
+                  ? 'assets/images/back2.png'
+                  : 'assets/images/back2.png'))),
+      child: SingleChildScrollView(
+          child: Column(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: <Widget>[
           Container(
+            color: Colors.white,
             child: Column(
               mainAxisAlignment: MainAxisAlignment.start,
               children: [
@@ -136,12 +144,6 @@ class SummaryScreenState extends State<SummaryScreen> {
             ),
           ),
           Container(
-            decoration: BoxDecoration(
-                image: DecorationImage(
-                    fit: BoxFit.cover,
-                    image: AssetImage(landscape
-                        ? 'assets/images/back2.png'
-                        : 'assets/images/back2.png'))),
             padding: EdgeInsets.only(bottom: 12),
             child: Column(
               children: [
@@ -156,18 +158,18 @@ class SummaryScreenState extends State<SummaryScreen> {
                 Wrap(
                   runSpacing: 12,
                   children: [
+                    Button(iconName: 'back', title: 'Atrás', onPressed: onBack),
                     Button(
                         iconName: 'save', title: 'Guardar', onPressed: onSave),
                     Button(
                         iconName: 'email', title: 'Enviar', onPressed: onSend),
-                    Button(iconName: 'back', title: 'Atrás', onPressed: onBack),
                   ],
                 )
               ],
             ),
           )
         ],
-      ),
+      )),
     );
   }
 

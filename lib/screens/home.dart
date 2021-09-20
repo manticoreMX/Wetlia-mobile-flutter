@@ -76,7 +76,8 @@ class HomeScreenState extends State<HomeScreen> {
     setState(() {
       this._clients = clients;
       this._distributors = distributors;
-      _pUnitario.text = jsonDecode(res['FullPrice'])[0]['FullPrice'].toString();
+      pUnitario = (jsonDecode(res['FullPrice'])[0]['FullPrice']).toDouble();
+      _pUnitario.text = addComa(pUnitario);
       loading = false;
     });
   }
@@ -126,65 +127,51 @@ class HomeScreenState extends State<HomeScreen> {
     this.vam = double.tryParse(_vam.text) ?? 0;
     this.vem = double.tryParse(_vem.text) ?? 0;
 
-    int pu = int.parse(_pUnitario.text);
+    double pu = pUnitario;
     var aux_ppv = 0.0;
     switch (ccaIndex) {
       case 0:
-        {
-          aux_ppv = pu.toDouble();
-          setState(() {
-            showe1 = false;
-          });
-          break;
-        }
+        hidel();
+        aux_ppv = pu.toDouble();
+        break;
       case 1:
-        {
-          aux_ppv = 37789.0 / 3.0;
-          setState(() {
-            showe1 = false;
-          });
-          break;
-        }
+        hidel();
+        aux_ppv = double.parse((37789.0 / 3.0).toStringAsFixed(2));
+        break;
       case 2:
-        {
-          aux_ppv = 5.0 * pu / 13.0;
-          setState(() {
-            showe1 = false;
-          });
-          break;
-        }
+        hidel();
+        aux_ppv = double.parse((5.0 * pu / 13.0).toStringAsFixed(2));
+        break;
       case 3:
-        {
-          aux_ppv = 10.0 * pu / 27.0;
-          setState(() {
-            showe1 = false;
-          });
-          break;
-        }
+        hidel();
+        aux_ppv = double.parse((10.0 * pu / 27.0).toStringAsFixed(2));
+        break;
       case 5:
-        {
-          setState(() {
-            showe1 = true;
-            e1Title = 'Tipo de condición comercial especial:% vs Full Price';
-            x1aT = '%';
-            x2aT = 'Full Price';
-            _x2a.text = '23558.00';
-            setState(() => x2aReadOnly = true);
-            aux_ppv = (pu * (100 - x1a)) / 100.0;
-          });
-        }
+        e1Title = 'Tipo de condición comercial especial: % vs Full Price';
+        x1aT = '%';
+        x2aT = 'Full Price';
+        showl();
+        setState(() {
+          _x2a.text = '23558.00';
+          x2aReadOnly = true;
+        });
+        aux_ppv = double.parse(((pu * (100 - x1a)) / 100.0).toStringAsFixed(2));
         break;
       case 4:
-        {
-          setState(() {
-            showe1 = true;
-            e1Title = 'Tipo de condición comercial especial:X1 + X2';
-            x1aT = 'X1';
-            x2aT = 'X2';
-            setState(() => x2aReadOnly = false);
-            aux_ppv = (x1a * pu) / (x1a + x2a);
-          });
+        showl();
+        e1Title = 'Tipo de condición comercial especial: X1 + X2';
+        x1aT = 'X1';
+        x2aT = 'X2';
+        setState(() {
+          x2aReadOnly = false;
+          if (_x2a.text == '23558.00') _x2a.text = '0';
+        });
+        if (x1a + x2a != 0)
+          aux_ppv = double.parse(((x1a * pu) / (x1a + x2a)).toStringAsFixed(2));
+        else {
+          return setNan();
         }
+
         break;
       default:
     }
@@ -195,9 +182,22 @@ class HomeScreenState extends State<HomeScreen> {
       _dsfpa.text = (100 - (aux_ppv / pu) * 100).toStringAsFixed(0) + '%';
       double aux1 =
           (double.tryParse(_vem.text) ?? 0) * propAlg['Precio Promedio'];
-      double aux2 = (double.tryParse(_vam.text) ?? 0) * aux_ppv;
+      double aux2 = (double.tryParse(_vam.text) ?? 0) * aux_ppv.floor();
       _dev.text = addComa(aux1 - aux2);
     }
+  }
+
+  showl() {
+    this.setState(() {
+      showe1 = true;
+    });
+  }
+
+  hidel() {
+    this.setState(() {
+      showe1 = false;
+      _x2aPlaceholder = '';
+    });
   }
 
   dynamic evalPropuesta(double val) {
@@ -290,7 +290,16 @@ class HomeScreenState extends State<HomeScreen> {
     return j;
   }
 
-  String addComa(double val) {
+  setNan() {
+    _dsfpa.text = 'NaN';
+    _dsfpe.text = '63%';
+    _dev.text = 'NaN';
+    _ppva.text = 'NaN';
+    _ppve.text = '8725.19';
+    _ccp.text = '10+17';
+  }
+
+  String addComa(val) {
     var r = (val.abs() % 1000).abs().toStringAsFixed(2);
     var m = (val / 1000).truncate();
     var l = r.split(".")[0].length;
@@ -310,6 +319,7 @@ class HomeScreenState extends State<HomeScreen> {
   List<String> _distributors = [];
   List<String> _clients = [];
   int clientId = 0, distributorId = 0;
+  double pUnitario = 0;
   bool loading = false;
   bool showe1 = false;
   bool x2aReadOnly = false;
@@ -319,6 +329,7 @@ class HomeScreenState extends State<HomeScreen> {
   double x2a = 0;
   double vam = 0;
   double vem = 0;
+  String _x2aPlaceholder = '';
   String e1Title = 'Tipo de condición comercial especial:% vs Full Price';
   String x1aT = '%';
   String x2aT = 'Full Price';
@@ -356,6 +367,12 @@ class HomeScreenState extends State<HomeScreen> {
   Widget homeBody() {
     var landscape = MediaQuery.of(context).orientation == Orientation.landscape;
     return Container(
+      decoration: BoxDecoration(
+          image: DecorationImage(
+              fit: BoxFit.cover,
+              image: AssetImage(landscape
+                  ? 'assets/images/back2.png'
+                  : 'assets/images/back2.png'))),
       height: double.infinity,
       child: SingleChildScrollView(
           child: Container(
@@ -369,6 +386,8 @@ class HomeScreenState extends State<HomeScreen> {
               mainAxisAlignment: MainAxisAlignment.start,
               children: [
                 Container(
+                  color: Colors.white,
+                  child: Container(
                     padding: EdgeInsets.only(bottom: 12),
                     decoration: BoxDecoration(
                         borderRadius:
@@ -397,28 +416,36 @@ class HomeScreenState extends State<HomeScreen> {
                                 padding: EdgeInsets.only(
                                     left: 8, right: 8, bottom: 12),
                                 child: Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
+                                  mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
-                                    CustomDropdown(
-                                        landscape: landscape,
-                                        items: this._distributors,
-                                        title: 'Distribuidor',
-                                        value: distributorId,
-                                        onChanged: onDistributorChanged),
-                                    CustomDropdown(
-                                        landscape: landscape,
-                                        items: this._clients,
-                                        title: 'Clientes',
-                                        value: clientId,
-                                        onChanged: onClientChanged)
+                                    Expanded(
+                                      // width: double.infinity,
+                                      child: CustomDropdown(
+                                          landscape: landscape,
+                                          items: this._distributors,
+                                          title: 'Distribuidor',
+                                          value: distributorId,
+                                          onChanged: onDistributorChanged),
+                                    ),
+                                    SizedBox(width: 12),
+                                    Expanded(
+                                      // width: double.infinity,
+                                      child: CustomDropdown(
+                                          landscape: landscape,
+                                          items: this._clients,
+                                          title: 'Clientes',
+                                          value: clientId,
+                                          onChanged: onClientChanged),
+                                    )
                                   ],
                                 )),
                       ],
-                    )),
-                SizedBox(height: 20),
+                    ),
+                  ),
+                ),
                 Container(
-                  padding: EdgeInsets.symmetric(horizontal: 12),
+                  color: Colors.white,
+                  padding: EdgeInsets.only(left: 12, right: 12, top: 20),
                   width: double.infinity,
                   child: Row(
                     children: [
@@ -467,9 +494,9 @@ class HomeScreenState extends State<HomeScreen> {
                     ],
                   ),
                 ),
-                SizedBox(height: 18),
                 Container(
-                  padding: EdgeInsets.symmetric(horizontal: 12),
+                  color: Colors.white,
+                  padding: EdgeInsets.only(left: 12, right: 12, top: 12),
                   width: double.infinity,
                   child: Row(
                     children: [
@@ -508,7 +535,7 @@ class HomeScreenState extends State<HomeScreen> {
                             ),
                             SizedBox(height: 6),
                             Text(
-                              'Diferencia en valores',
+                              'Diferencial en valores',
                               style:
                                   TextStyle(fontSize: 12, color: Colors.grey),
                               overflow: TextOverflow.ellipsis,
@@ -519,8 +546,9 @@ class HomeScreenState extends State<HomeScreen> {
                     ],
                   ),
                 ),
-                SizedBox(height: 12),
                 Container(
+                  padding: EdgeInsets.only(top: 12),
+                  color: Colors.white,
                   child: Column(
                     children: [
                       Row(
@@ -727,12 +755,6 @@ class HomeScreenState extends State<HomeScreen> {
               ],
             )),
             Container(
-              decoration: BoxDecoration(
-                  image: DecorationImage(
-                      fit: BoxFit.cover,
-                      image: AssetImage(landscape
-                          ? 'assets/images/back2.png'
-                          : 'assets/images/back2.png'))),
               padding: EdgeInsets.only(bottom: 12),
               child: Column(
                 children: [
@@ -759,7 +781,7 @@ class HomeScreenState extends State<HomeScreen> {
                           iconName: 'back', title: 'Atrás', onPressed: onBack),
                       Button(
                           iconName: 'next',
-                          title: 'Siguinte',
+                          title: 'Siguiente',
                           onPressed: onNext,
                           iconRight: true),
                     ],
@@ -905,9 +927,7 @@ class HomeScreenState extends State<HomeScreen> {
       'FechaFin': getDate2()
     };
     prefs.setString('Propuesta', jsonEncode(json));
-    showSnackbar(
-        'Los datos han sido guardados en el dispositivo. Puedes proceder a enviar correo.',
-        context);
+    showSnackbar('Los datos han sido guardados en el dispositivo.', context);
     this.saved = true;
   }
 
