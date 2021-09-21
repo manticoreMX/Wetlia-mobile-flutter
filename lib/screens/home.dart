@@ -417,7 +417,9 @@ class HomeScreenState extends State<HomeScreen> {
                             ? Container()
                             : Container(
                                 padding: EdgeInsets.only(
-                                    left: 8, right: 8, bottom: 12),
+                                    left: landscape ? 16 : 8,
+                                    right: landscape ? 16 : 8,
+                                    bottom: 12),
                                 child: Row(
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   children: [

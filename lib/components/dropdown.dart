@@ -46,23 +46,43 @@ class CustomDropdownState extends State<CustomDropdown> {
             color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14),
       ),
       widget.landscape ? SizedBox(width: 12) : SizedBox(height: 12),
-      Expanded(
-          child: DropdownButtonHideUnderline(
-        child: DropdownBelow(
-            items: ddItems,
-            boxDecoration: BoxDecoration(color: Colors.white),
-            itemWidth: 320,
-            itemTextstyle: TextStyle(fontSize: 14, color: Colors.black),
-            boxTextstyle: TextStyle(fontSize: 14, color: Colors.black),
-            boxPadding: EdgeInsets.symmetric(horizontal: 12),
-            boxHeight: 45,
-            icon: Icon(Icons.expand_more_rounded, color: Colors.grey, size: 20),
-            value: index!,
-            onChanged: (int? value) {
-              setState(() => index = value);
-              widget.onChanged(value);
-            }),
-      ))
+      widget.landscape
+          ? Expanded(
+              child: DropdownButtonHideUnderline(
+              child: DropdownBelow(
+                  items: ddItems,
+                  boxDecoration: BoxDecoration(color: Colors.white),
+                  itemWidth: 320,
+                  itemTextstyle: TextStyle(fontSize: 14, color: Colors.black),
+                  boxTextstyle: TextStyle(fontSize: 14, color: Colors.black),
+                  boxPadding: EdgeInsets.symmetric(horizontal: 12),
+                  boxHeight: 45,
+                  icon: Icon(Icons.expand_more_rounded,
+                      color: Colors.grey, size: 20),
+                  value: index!,
+                  onChanged: (int? value) {
+                    setState(() => index = value);
+                    widget.onChanged(value);
+                  }),
+            ))
+          : Container(
+              child: DropdownButtonHideUnderline(
+              child: DropdownBelow(
+                  items: ddItems,
+                  boxDecoration: BoxDecoration(color: Colors.white),
+                  itemWidth: 320,
+                  itemTextstyle: TextStyle(fontSize: 14, color: Colors.black),
+                  boxTextstyle: TextStyle(fontSize: 14, color: Colors.black),
+                  boxPadding: EdgeInsets.symmetric(horizontal: 12),
+                  boxHeight: 45,
+                  icon: Icon(Icons.expand_more_rounded,
+                      color: Colors.grey, size: 20),
+                  value: index!,
+                  onChanged: (int? value) {
+                    setState(() => index = value);
+                    widget.onChanged(value);
+                  }),
+            ))
     ];
     return Container(
       width: double.infinity,
