@@ -60,7 +60,6 @@ class HomeScreenState extends State<HomeScreen> {
 
   void initData(res, SharedPreferences prefs) {
     List<dynamic> distribudores = jsonDecode(res['Distribuidores']);
-    prefs.setString('distribudor', _distributors[0]);
 
     List<dynamic> clientes = jsonDecode(res['Clientes']);
 
@@ -78,6 +77,8 @@ class HomeScreenState extends State<HomeScreen> {
     setState(() {
       this._clients = clients;
       this._distributors = distributors;
+      prefs.setString('distribudor', _distributors[0]);
+
       pUnitario = (jsonDecode(res['FullPrice'])[0]['FullPrice']).toDouble();
       _pUnitario.text = addComa(pUnitario);
       loading = false;
