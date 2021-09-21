@@ -43,8 +43,7 @@ class HomeScreenState extends State<HomeScreen> {
         prefs.setString('aux_x2b', '0');
         prefs.setString('aux_vam2', _vam.text);
         prefs.setString('aux_cliente', clientId.toString());
-        prefs.setString('distribudor', _distributors[0]);
-        initData(res);
+        initData(res, prefs);
       }
     });
   }
@@ -59,8 +58,10 @@ class HomeScreenState extends State<HomeScreen> {
     return await MainApi.getData();
   }
 
-  void initData(res) {
+  void initData(res, SharedPreferences prefs) {
     List<dynamic> distribudores = jsonDecode(res['Distribuidores']);
+    prefs.setString('distribudor', _distributors[0]);
+
     List<dynamic> clientes = jsonDecode(res['Clientes']);
 
     List<String> clients = [];
