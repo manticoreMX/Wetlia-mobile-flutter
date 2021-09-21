@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:calculator/apis/auth.dart';
+import 'package:calculator/screens/summary.dart';
 import 'package:calculator/widgets/new-client.dart';
 import 'package:flutter_phoenix/flutter_phoenix.dart';
 import 'package:intl/intl.dart';
@@ -14,9 +15,11 @@ import 'package:calculator/widgets/snackbar.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:loading_overlay/loading_overlay.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 class HomeScreen extends StatefulWidget {
+  final String token;
+  final dynamic data;
+  HomeScreen({required this.token, required this.data});
   @override
   HomeScreenState createState() => HomeScreenState();
 }
@@ -29,21 +32,21 @@ class HomeScreenState extends State<HomeScreen> {
       if (res.toString() == '') {
       } else {
         res = jsonDecode(res);
-        SharedPreferences prefs = await SharedPreferences.getInstance();
-        prefs.setString('Clientes', res['Clientes']);
-        prefs.setString('Distribuidores', res['Distribuidores']);
-        prefs.setString('PropuestaActual', res['PropuestaActual']);
-        prefs.setString('FullPrice', res['FullPrice']);
+        // SharedPreferences prefs = await SharedPreferences.getInstance();
+        // prefs.setString('Clientes', res['Clientes']);
+        // prefs.setString('Distribuidores', res['Distribuidores']);
+        // prefs.setString('PropuestaActual', res['PropuestaActual']);
+        // prefs.setString('FullPrice', res['FullPrice']);
 
-        prefs.setString('aux_cca', '');
-        prefs.setString('aux_ccp', '');
-        prefs.setString('aux_x1a', '0');
-        prefs.setString('aux_x1b', '0');
-        prefs.setString('aux_x2a', '0');
-        prefs.setString('aux_x2b', '0');
-        prefs.setString('aux_vam2', _vam.text);
-        prefs.setString('aux_cliente', clientId.toString());
-        initData(res, prefs);
+        // prefs.setString('aux_cca', '');
+        // prefs.setString('aux_ccp', '');
+        // prefs.setString('aux_x1a', '0');
+        // prefs.setString('aux_x1b', '0');
+        // prefs.setString('aux_x2a', '0');
+        // prefs.setString('aux_x2b', '0');
+        // prefs.setString('aux_vam2', _vam.text);
+        // prefs.setString('aux_cliente', clientId.toString());
+        initData(res);
       }
     });
   }
@@ -55,10 +58,10 @@ class HomeScreenState extends State<HomeScreen> {
 
   dynamic getData() async {
     setState(() => loading = true);
-    return await MainApi.getData();
+    return await MainApi.getData(widget.token);
   }
 
-  void initData(res, SharedPreferences prefs) {
+  void initData(res) {
     List<dynamic> distribudores = jsonDecode(res['Distribuidores']);
 
     List<dynamic> clientes = jsonDecode(res['Clientes']);
@@ -77,7 +80,7 @@ class HomeScreenState extends State<HomeScreen> {
     setState(() {
       this._clients = clients;
       this._distributors = distributors;
-      prefs.setString('distribudor', _distributors[0]);
+      distribudor = _distributors[0];
 
       pUnitario = (jsonDecode(res['FullPrice'])[0]['FullPrice']).toDouble();
       _pUnitario.text = addComa(pUnitario);
@@ -86,8 +89,7 @@ class HomeScreenState extends State<HomeScreen> {
   }
 
   void onDistributorChanged(int value) {
-    SharedPreferences.getInstance()
-        .then((pref) => pref.setString('distribudor', _distributors[value]));
+    distribudor = _distributors[value];
   }
 
   void onClientChanged(int value) {
@@ -99,20 +101,24 @@ class HomeScreenState extends State<HomeScreen> {
                     borderRadius: BorderRadius.all(Radius.circular(12))),
                 child: NewClient(onPressed: onNewClient),
               ));
+    } else {
+      cliente = _clients[clientId];
     }
-    SharedPreferences.getInstance().then((prefs) {
-      prefs.setString('aux_cliente', (clientId = value).toString());
-      prefs.setString('cliente', _clients[clientId]);
-    });
+    // SharedPreferences.getInstance().then((prefs) {
+    //   prefs.setString('aux_cliente', (clientId = value).toString());
+    //   prefs.setString('cliente', _clients[clientId]);
+    // });
   }
 
   void onNewClient(String name) {
     setState(() {
       _clients.insert(_clients.length - 1, name);
       clientId = _clients.length - 1;
+      cliente = name;
     });
-    SharedPreferences.getInstance()
-        .then((pref) => pref.setString('cliente', name));
+
+    // SharedPreferences.getInstance()
+    //     .then((pref) => pref.setString('cliente', name));
   }
 
   void ccaChanged(int value) {
@@ -336,6 +342,9 @@ class HomeScreenState extends State<HomeScreen> {
   String e1Title = 'Tipo de condición comercial especial:% vs Full Price';
   String x1aT = '%';
   String x2aT = 'Full Price';
+  String distribudor = '';
+  String cliente = '';
+  dynamic propuesta = {};
   TextEditingController _pUnitario = TextEditingController();
   TextEditingController _dsfpa = TextEditingController();
   TextEditingController _dsfpe = TextEditingController();
@@ -877,16 +886,16 @@ class HomeScreenState extends State<HomeScreen> {
     setState(() {
       loading = true;
     });
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    String email = jsonDecode(prefs.getString('data')!)[0]['Email'];
-    var res = await AuthApi.logout(email);
+    // SharedPreferences prefs = await SharedPreferences.getInstance();
+    String email = widget.data[0]['Email'];
+    var res = await AuthApi.logout(email, widget.token);
     setState(() {
       loading = false;
     });
     if (res.toString() == 'Wrong credential')
       return showSnackbar('Sorry try again', context);
     else {
-      prefs.remove('data');
+      // prefs.remove('data');
       Phoenix.rebirth(context);
     }
   }
@@ -902,7 +911,13 @@ class HomeScreenState extends State<HomeScreen> {
           'Antes de continuar recuerda guardar los valores calculados.',
           context);
     }
-    Navigator.pushNamed(context, SUMMARY);
+    Navigator.of(context).push(
+      new MaterialPageRoute(
+          builder: (BuildContext context) => SummaryScreen(
+              propuesta: propuesta,
+              cliente: cliente,
+              distribudor: distribudor)),
+    );
   }
 
   onSave() async {
@@ -911,8 +926,8 @@ class HomeScreenState extends State<HomeScreen> {
     if (vem <= vam)
       return showSnackbar(
           'Viales esperados x mes debe ser mayor a los actuales.', context);
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    dynamic profile = jsonDecode(prefs.getString('data')!);
+    // SharedPreferences prefs = await SharedPreferences.getInstance();
+    dynamic profile = widget.data;
     dynamic json = {
       'Email': profile[0]['Email'],
       'Distribuidor': distributorId,
@@ -931,7 +946,8 @@ class HomeScreenState extends State<HomeScreen> {
       'FechaInicio': getDate1(),
       'FechaFin': getDate2()
     };
-    prefs.setString('Propuesta', jsonEncode(json));
+    // prefs.setString('Propuesta', jsonEncode(json));
+    propuesta = jsonEncode(json);
     showSnackbar('Los datos han sido guardados en el dispositivo.', context);
     this.saved = true;
   }

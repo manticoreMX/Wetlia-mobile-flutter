@@ -1,11 +1,11 @@
 import 'package:calculator/apis/http.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+// import 'package:shared_preferences/shared_preferences.dart';
 
 class MainApi {
-  static getData() async {
-    SharedPreferences sp = await SharedPreferences.getInstance();
-    var token = sp.getString('token');
-    if (token == null) token = '';
+  static getData(String token) async {
+    // SharedPreferences sp = await SharedPreferences.getInstance();
+    // var token = sp.getString('token');
+    // if (token == null) token = '';
     var res = await post('/getData', {'Token': token});
     return res;
   }
