@@ -43,7 +43,7 @@ class HomeScreenState extends State<HomeScreen> {
         prefs.setString('aux_x2b', '0');
         prefs.setString('aux_vam2', _vam.text);
         prefs.setString('aux_cliente', clientId.toString());
-
+        prefs.setString('distribudor', _distributors[0]);
         initData(res);
       }
     });
@@ -73,6 +73,7 @@ class HomeScreenState extends State<HomeScreen> {
       clients.add(element['Cliente']);
     });
     clients.add('Nuevo');
+
     setState(() {
       this._clients = clients;
       this._distributors = distributors;
