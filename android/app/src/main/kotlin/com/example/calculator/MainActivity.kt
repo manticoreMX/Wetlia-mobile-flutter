@@ -1,4 +1,4 @@
-package net.multimediacorp.www
+package net.multimediacorp.wetliamovil
 
 import io.flutter.embedding.android.FlutterActivity
 
